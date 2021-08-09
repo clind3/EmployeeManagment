@@ -2,6 +2,7 @@ const mysql = require('mysql');
 const inquirer = require('inquirer');
 const express = require('express');
 require('dotenv').config();
+const cTable = require('console.table');
 
 //initialize
 const PORT = process.env.PORT || 3001;
@@ -108,12 +109,16 @@ const collectRole = () => {
     return roleInfo;
 }
 
-const collectDept = () => {
+const collectDept = (need) => {
     let deptInfo = [];
-    connection.query('SELECT * FROM department', (err, res) => {
+    connection.query(`SELECT * FROM department`, (err, res) => {
         if (err) throw err;
+
         res.forEach(({ id, name }) => {
-          deptInfo.push(id);
+          if(need == '*'){
+
+          }
+            deptInfo.push();
         });
     });
     return deptInfo;
@@ -232,6 +237,17 @@ const addEmployee = () => {
 /*====================================================================
       VIEW DEPT, ROLES, OR EMPLOYEE PROMPTS
 ======================================================================*/
+let viewQuery = [];
+
+const viewDept = () => {
+    connection.query('SELECT * FROM department', (err, res) => {
+        res.forEach(({id, name}) => {
+            viewQuery.push([`${id}`, `${name}`]);
+        })
+        console.table(['id', 'name'], viewQuery);
+        
+    })
+}
 
 
 /*====================================================================
