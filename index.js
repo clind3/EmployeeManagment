@@ -1,5 +1,6 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
+require('dotenv').config();
 
 //create connection to the database
 const connection = mysql.createConnection({
@@ -15,6 +16,7 @@ connection.connect((err) => {
     startManaging();
 });
 
+//main action inquirer
 const startManaging = () => {
     inquirer
         .prompt({
@@ -23,30 +25,50 @@ const startManaging = () => {
             message: 'What would you like to do?',
             choices: [
                 //required actions
-                'Add departments, roles, employees',
-                'View departments, roles, employees',
+                'Add Department',
+                'Add Role',
+                'Add Employee',
+                'View Department',
+                'View Role',
+                'View Employee',
                 'Update employee roles',
-                //optional actions
-                'Update employee managers',
-                'View employees by manager',
-                'Delete departments, roles, and employees',
-                'View the total utilized budget of a department',
+                'More Options',
                 //stop program
                 'EXIT',
             ],
         })
         .then((answer) => {
             switch (answer.action) {
-                case 'Add departments, roles, employees':
-                    addToWhere();
+                case 'Add Department':
+                    addDept();
                     break;
 
-                case 'View departments, roles, employees':
-                    viewDb();
+                case 'Add Role':
+                    addRole();
+                    break;
+
+                case 'Add Employee':
+                    addEmployee();
+                    break;
+
+                case 'View Department':
+                    viewDept();
+                    break;
+
+                case 'View Role':
+                    viewRole();
+                    break;
+
+                case 'View Employee':
+                    viewEmployee();
                     break;
 
                 case 'Update employee roles':
                     updateEmpRole();
+                    break;
+
+                case 'More Options...':
+                    moreOptions();
                     break;
 
                 case 'Exit':
@@ -60,17 +82,45 @@ const startManaging = () => {
         });
 };
 
-//inquire if user wants to add department, roles, or employees
-const addToWhere = () => {
+/*====================================================================
+      COLLECT DB TABLE INFO
+======================================================================*/
+const collectRole = () => {
 
 }
 
-//view database info fcn
-const viewDb = () => {
+const collectManagers = () => {
 
 }
 
-//update employee role fcn
+const collectEmp = () => {}
+
+/*====================================================================
+      ADDING DEPT, ROLES, OR EMPLOYEE PROMPTS
+======================================================================*/
+const addDept = () => {
+
+}
+
+/*====================================================================
+      VIEW DEPT, ROLES, OR EMPLOYEE PROMPTS
+======================================================================*/
+
+
+/*====================================================================
+      UPDATE EMPLOYEE ROLE PROMPTS
+======================================================================*/
+
 const updateEmpRole = () => {
 
 }
+
+/*====================================================================
+      MORE OPTION PROMPTS (OPTIONAL CODE)
+======================================================================*/
+
+//optional actions
+                // 'Update employee managers',
+                // 'View employees by manager',
+                // 'Delete departments, roles, and employees',
+                // 'View the total utilized budget of a department', 
