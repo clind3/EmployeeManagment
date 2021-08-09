@@ -1,20 +1,32 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
+const express = require('express');
 require('dotenv').config();
+
+//initialize
+const PORT = process.env.PORT || 3001;
+const app = express();
+
+//Express middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 //create connection to the database
 const connection = mysql.createConnection({
     host: 'localhost',
-    port: process.env.PORT || 3301,
+    port: 3306,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-});
+},
+console.log('connected to db!')
+);
 
-connection.connect((err) => {
-    if (err) throw err;
-    startManaging();
-});
+// connection.connect((err) => {
+//     if (err) throw err;
+//     startManaging();
+// });
+
 
 //main action inquirer
 const startManaging = () => {
@@ -81,16 +93,30 @@ const startManaging = () => {
             }
         });
 };
-
+startManaging();
 /*====================================================================
       COLLECT DB TABLE INFO
 ======================================================================*/
 const collectRole = () => {
-
+    let roleInfo = [];
+    connection.query('SELECT * FROM role', (err, res) => {
+        if (err) throw err;
+        res.forEach(({ id, title }) => {
+          roleInfo.push(id);
+        });
+    });
+    return roleInfo;
 }
 
-const collectManagers = () => {
-
+const collectDept = () => {
+    let deptInfo = [];
+    connection.query('SELECT * FROM department', (err, res) => {
+        if (err) throw err;
+        res.forEach(({ id, name }) => {
+          deptInfo.push(id);
+        });
+    });
+    return deptInfo;
 }
 
 const collectEmp = () => {}
@@ -98,8 +124,109 @@ const collectEmp = () => {}
 /*====================================================================
       ADDING DEPT, ROLES, OR EMPLOYEE PROMPTS
 ======================================================================*/
-const addDept = () => {
+let addQuery;
 
+const addDept = () => {
+    inquirer.prompt([{
+        name: 'id',
+        type: 'number',
+        message: 'Enter Dept ID:'
+    },
+    {
+        name: 'name',
+        type: 'input',
+        message: 'Enter Dept. Name:'
+    }
+]).then((answers) => {
+    addQuery = `INSERT INTO department (id, name) VALUES (${answers.id}, "${answers.name}")`;
+    // console.log(addQuery);
+    connection.query(addQuery, (err) => {
+        if (err) throw err; 
+        startManaging();
+    });
+   
+})    
+}
+
+
+const addRole = () => {
+    inquirer.prompt([{
+        name: 'id',
+        type: 'number',
+        message: 'Enter Role ID:'
+    },
+    {
+        name: 'title',
+        type: 'input',
+        message: 'Enter Role Title:'
+    },
+    {
+        name: 'salary',
+        type: 'input',
+        message: 'Enter Role Salary:'
+    },
+    {
+        name: 'deptId',
+        type: 'list',
+        message: 'Which dept. id is this role associated?',
+        choices: collectDept()
+    }
+]).then((answers) => {
+    addQuery = `INSERT INTO role (id, title, salary, department_id) VALUES (${answers.id}, "${answers.title}", ${answers.salary}, "${answers.deptId}")`;
+    // console.log(addQuery);
+    connection.query(addQuery, (err) => {
+        if (err) throw err;
+        startManaging();
+    });
+    
+});  
+}
+
+const addEmployee = () => {
+    inquirer.prompt([{
+        name: 'id',
+        type: 'number',
+        message: 'Enter Employee ID:'
+    },
+    {
+        name: 'first',
+        type: 'input',
+        message: 'Enter Employee First Name:'
+    },
+    {
+        name: 'last',
+        type: 'input',
+        message: 'Enter Employee Last Name:'
+    },
+    {
+        name: 'haveManager',
+        type: 'confirm',
+        message: 'Does this employee have a manager?',
+    },
+    {
+        name: 'manId',
+        type: 'input',
+        message: "Enter Manager's Employee Id:"
+    },
+    {
+        name: 'roleId',
+        type: 'list',
+        message: 'Choose corresponding Role Id:',
+        choices: collectRole()
+    }
+]).then((answers) => {
+    let manager = null;
+    if(answers.haveManager){
+        manager = `${answers.manId}`;
+    }
+    addQuery = `INSERT INTO employee (id, first_name, last_name, manager_id, role_id) VALUES (${answers.id}, "${answers.first}", "${answers.last}", ${manager}, ${answers.roleId})`;
+    // console.log(addQuery);
+    connection.query(addQuery, (err) => {
+        if (err) throw err;
+        startManaging();
+    });
+    
+});  
 }
 
 /*====================================================================
@@ -114,6 +241,15 @@ const addDept = () => {
 const updateEmpRole = () => {
 
 }
+
+/*==============================================
+    Initialize server
+================================================*/
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+
+module.exports = connection;
 
 /*====================================================================
       MORE OPTION PROMPTS (OPTIONAL CODE)
