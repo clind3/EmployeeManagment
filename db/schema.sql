@@ -7,27 +7,27 @@ USE manage_db;
 CREATE TABLE department (
     id INT NOT NULL,
     name VARCHAR(30) NOT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (name)
 );
 
 CREATE TABLE role (
-    id INT NOT NULL,
+    id INT AUTO_INCREMENT NOT NULL,
     title VARCHAR(30) NOT NULL,
     salary DECIMAL NOT NULL,
-    department_id INT NOT NULL,
-    FOREIGN KEY (department_id),
-    REFERENCES department(id),
+    department_id VARCHAR(30)
+    REFERENCES department(name),
     PRIMARY KEY (id)
 );
 
 CREATE TABLE employee (
-    id INT NOT NULL,
+    id INT AUTO_INCREMENT NOT NULL,
     first_name VARCHAR(30) NOT NULL,
     last_name VARCHAR(30) NOT NULL,
     manager_id INT NULL,
-    role_id INT NOT NULL,
-    FOREIGN KEY (role_id),
+    role_id INT
     REFERENCES role(id),
     PRIMARY KEY (id)
 );
 
+-- create table with following column name and info
+-- id firstname lastname title dept salary manager

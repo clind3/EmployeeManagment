@@ -3,6 +3,7 @@ const inquirer = require('inquirer');
 const express = require('express');
 require('dotenv').config();
 const cTable = require('console.table');
+const prompts = require('./models/prompts');
 
 //initialize
 const PORT = process.env.PORT || 3001;
@@ -20,13 +21,13 @@ const connection = mysql.createConnection({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
 },
-console.log('connected to db!')
+    console.log('connected to db!')
 );
 
-// connection.connect((err) => {
-//     if (err) throw err;
-//     startManaging();
-// });
+connection.connect((err) => {
+    if (err) throw err;
+    startManaging();
+});
 
 
 //main action inquirer
@@ -44,8 +45,8 @@ const startManaging = () => {
                 'View Department',
                 'View Role',
                 'View Employee',
-                'Update employee roles',
-                'More Options',
+                'View Roster',
+                'Update Employee Info',
                 //stop program
                 'EXIT',
             ],
@@ -76,13 +77,14 @@ const startManaging = () => {
                     viewEmployee();
                     break;
 
-                case 'Update employee roles':
-                    updateEmpRole();
+                case 'View Roster':
+                    createConsTable();
                     break;
 
-                case 'More Options...':
-                    moreOptions();
+                case 'Update Employee Info':
+                    updateEmp();
                     break;
+
 
                 case 'Exit':
                     connection.end();
@@ -94,37 +96,6 @@ const startManaging = () => {
             }
         });
 };
-startManaging();
-/*====================================================================
-      COLLECT DB TABLE INFO
-======================================================================*/
-const collectRole = () => {
-    let roleInfo = [];
-    connection.query('SELECT * FROM role', (err, res) => {
-        if (err) throw err;
-        res.forEach(({ id, title }) => {
-          roleInfo.push(id);
-        });
-    });
-    return roleInfo;
-}
-
-const collectDept = (need) => {
-    let deptInfo = [];
-    connection.query(`SELECT * FROM department`, (err, res) => {
-        if (err) throw err;
-
-        res.forEach(({ id, name }) => {
-          if(need == '*'){
-
-          }
-            deptInfo.push();
-        });
-    });
-    return deptInfo;
-}
-
-const collectEmp = () => {}
 
 /*====================================================================
       ADDING DEPT, ROLES, OR EMPLOYEE PROMPTS
@@ -132,131 +103,128 @@ const collectEmp = () => {}
 let addQuery;
 
 const addDept = () => {
-    inquirer.prompt([{
-        name: 'id',
-        type: 'number',
-        message: 'Enter Dept ID:'
-    },
-    {
-        name: 'name',
-        type: 'input',
-        message: 'Enter Dept. Name:'
-    }
-]).then((answers) => {
-    addQuery = `INSERT INTO department (id, name) VALUES (${answers.id}, "${answers.name}")`;
-    // console.log(addQuery);
-    connection.query(addQuery, (err) => {
-        if (err) throw err; 
-        startManaging();
-    });
-   
-})    
+    inquirer.prompt(prompts.addDeptP).then((answers) => {
+        addQuery = `INSERT INTO department (id, name) VALUES (${answers.id}, "${answers.name}")`;
+        // console.log(addQuery);
+        connection.query(addQuery, (err) => {
+            if (err) throw err;
+            startManaging();
+        });
+
+    })
 }
 
 
 const addRole = () => {
-    inquirer.prompt([{
-        name: 'id',
-        type: 'number',
-        message: 'Enter Role ID:'
-    },
-    {
-        name: 'title',
-        type: 'input',
-        message: 'Enter Role Title:'
-    },
-    {
-        name: 'salary',
-        type: 'input',
-        message: 'Enter Role Salary:'
-    },
-    {
-        name: 'deptId',
-        type: 'list',
-        message: 'Which dept. id is this role associated?',
-        choices: collectDept()
-    }
-]).then((answers) => {
-    addQuery = `INSERT INTO role (id, title, salary, department_id) VALUES (${answers.id}, "${answers.title}", ${answers.salary}, "${answers.deptId}")`;
-    // console.log(addQuery);
-    connection.query(addQuery, (err) => {
-        if (err) throw err;
-        startManaging();
+    inquirer.prompt(prompts.addRoleP).then((answers) => {
+        addQuery = `INSERT INTO role (title, salary, department_id) VALUES ( "${answers.title}", ${answers.salary}, "${answers.deptId}")`;
+        // console.log(addQuery);
+        connection.query(addQuery, (err) => {
+            if (err) throw err;
+            startManaging();
+        });
+
     });
-    
-});  
 }
 
 const addEmployee = () => {
-    inquirer.prompt([{
-        name: 'id',
-        type: 'number',
-        message: 'Enter Employee ID:'
-    },
-    {
-        name: 'first',
-        type: 'input',
-        message: 'Enter Employee First Name:'
-    },
-    {
-        name: 'last',
-        type: 'input',
-        message: 'Enter Employee Last Name:'
-    },
-    {
-        name: 'haveManager',
-        type: 'confirm',
-        message: 'Does this employee have a manager?',
-    },
-    {
-        name: 'manId',
-        type: 'input',
-        message: "Enter Manager's Employee Id:"
-    },
-    {
-        name: 'roleId',
-        type: 'list',
-        message: 'Choose corresponding Role Id:',
-        choices: collectRole()
-    }
-]).then((answers) => {
-    let manager = null;
-    if(answers.haveManager){
-        manager = `${answers.manId}`;
-    }
-    addQuery = `INSERT INTO employee (id, first_name, last_name, manager_id, role_id) VALUES (${answers.id}, "${answers.first}", "${answers.last}", ${manager}, ${answers.roleId})`;
-    // console.log(addQuery);
-    connection.query(addQuery, (err) => {
-        if (err) throw err;
-        startManaging();
+    inquirer.prompt(prompts.addEmpP).then((answers) => {
+        let manager = null;
+        if (answers.haveManager) {
+            manager = `${answers.manId}`;
+        }
+        addQuery = `INSERT INTO employee ( first_name, last_name, manager_id, role_id) VALUES ("${answers.first}", "${answers.last}", ${manager}, ${answers.roleId})`;
+        // console.log(addQuery);
+        connection.query(addQuery, (err) => {
+            if (err) throw err;
+            startManaging();
+        });
+
     });
-    
-});  
 }
 
 /*====================================================================
       VIEW DEPT, ROLES, OR EMPLOYEE PROMPTS
 ======================================================================*/
-let viewQuery = [];
 
-const viewDept = () => {
-    connection.query('SELECT * FROM department', (err, res) => {
-        res.forEach(({id, name}) => {
-            viewQuery.push([`${id}`, `${name}`]);
-        })
-        console.table(['id', 'name'], viewQuery);
-        
+const createConsTable = () => {
+    connection.query("SELECT * FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.name",
+    (err,res) => {
+        console.table(res);
     })
+    startManaging();
 }
 
+//will need to review inner join to get all employees from dept
+const viewDept = () => {
+    connection.query('SELECT * FROM department', (err, res) => {
+        console.table( res);
+    })
+    startManaging();
+}
+
+const viewEmployee = () => {
+    connection.query('SELECT * FROM employee', (err, res)=> {
+        console.table(res);
+    })
+    startManaging();
+}
+
+const viewRole = () => {
+    connection.query('SELECT * FROM role', (err, res) => {
+        console.table(res);
+    })
+    startManaging();
+}
 
 /*====================================================================
       UPDATE EMPLOYEE ROLE PROMPTS
 ======================================================================*/
 
-const updateEmpRole = () => {
-
+const updateEmp = () => {
+    inquirer.prompt([{
+        name: 'update',
+        type: 'list',
+        message: 'Which would you like to update?',
+        choices: ['Role', 'Manager']
+    },
+    {
+        name: 'empId',
+        type: 'input',
+        message: 'Enter Employee Id:'
+    }]).then((answer) => {
+            switch (answer.update) {
+            case ('Role'):
+                updateEmpRole(answer.empId);
+                break;
+            case ('Manager'):
+                updateEmpMan(answer.empId);
+                break;
+        } 
+    })
+    
 }
+const updateEmpRole = (empId) => {
+   inquirer.prompt({
+       name: 'newRole',
+       type: 'input',
+       message: 'Enter the new Role Id:'
+   }).then((value) => {
+       connection.query(`UPDATE employee SET role_id = ${value.newRole} WHERE id = ${empId}`)
+   })
+   startManaging();
+}
+
+const updateEmpMan = (empId) => {
+    inquirer.prompt({
+        name: 'newMan',
+        type: 'input',
+        message: 'Enter the new Manager Id:'
+    }).then((value) => {
+        connection.query(`UPDATE employee SET manager_id = ${value.newMan} WHERE employee_id = ${empId}`)
+    })
+    startManaging();
+ }
 
 /*==============================================
     Initialize server
@@ -276,3 +244,4 @@ module.exports = connection;
                 // 'View employees by manager',
                 // 'Delete departments, roles, and employees',
                 // 'View the total utilized budget of a department', 
+
