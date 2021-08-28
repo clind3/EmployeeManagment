@@ -27,7 +27,10 @@
 
   Celina Lind
 
-https://nodejs.org/en/ https://www.mysql.com/
+    [Node.js](https://nodejs.org/en/) 
+    [MySQL](https://www.mysql.com/)
+    [console.table](https://www.npmjs.com/package/console.table)
+    [SQL Bolt](https://sqlbolt.com/)
 
  Contact me with any questions at my email clind323@gmail.com or at my GitHub https://github.com/clind3
 
