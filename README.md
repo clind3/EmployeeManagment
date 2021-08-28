@@ -22,6 +22,12 @@
   ## Usage
 
   Once program is installed on the device user is able to do 'node index.js' or 'npm run' in terminal to easily start the program. User is then able to decide what action they would like to proceed with. And will continue to be prompted with options until user selects to 'Exit' the program.
+  
+  
+
+https://user-images.githubusercontent.com/73320520/131205217-6bf9b3c2-118e-47e9-bb29-e4b7be994af6.mp4
+
+
 
   ## Credits
 
