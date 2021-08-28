@@ -1,5 +1,4 @@
 const inquirer = require('inquirer');
-const {collectDeptId, collectRole} = require('../index');
 
 /*====================================
     MAIN PROMPTS
